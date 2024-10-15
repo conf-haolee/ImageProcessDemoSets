@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="20.11.1.0">
+<procedure name="main">
+<interface/>
+<body>
+<c>* In this example, the task is to split the touching pellets.</c>
+<c>* First, a simple thresholding operation yields the region of the pellets</c>
+<c>* in the image. Unfortunately, some of the connected components</c>
+<c>* of this region do not represent single pellets but contain more than one</c>
+<c>* pellet. Therefore, in a second step the watersheds are computed based</c>
+<c>* on the distance transformed pellets regions. The corresponding basins</c>
+<c>* are finally used to split the falsely connected pellets by intersecting the</c>
+<c>* basins with the pellets regions.</c>
+<c>* </c>
+<l>dev_set_draw ('margin')</l>
+<l>dev_set_colored (12)</l>
+<l>read_image (Image, 'pellets')</l>
+<l>read_image (Image202312151548395206118, 'C:/Users/haoLee/OneDrive/Desktop/halcon 模板匹配测试/测试模版匹配01/9.5mm红色O圈/test01/(2023-12-15)(15-48-39-520)_6118.bmp')</l>
+<l>rgb1_to_gray(Image202312151548395206118, GrayImage)</l>
+<l>dev_close_window ()</l>
+<l>get_image_size (GrayImage, Width, Height)</l>
+<l>dev_open_window (0, 0, Width/4, Height/4, 'black', WindowHandle)</l>
+<l>threshold (GrayImage, Region, 0, 100)</l>
+<l>connection (Region, ConnectedRegions)</l>
+<l>select_shape (ConnectedRegions, SelectedRegions, 'area', 'and', 20, 99999)</l>
+<l>dev_display (GrayImage)</l>
+<l>dev_display (SelectedRegions)</l>
+<l>disp_continue_message (WindowHandle, 'black', 'true')</l>
+<l>stop ()</l>
+<c>* </c>
+<l>distance_transform (SelectedRegions, DistanceImage, 'euclidean', 'true', Width, Height)</l>
+<l>convert_image_type (DistanceImage, DistanceImageByte, 'byte')</l>
+<l>invert_image (DistanceImageByte, DistanceImageInv)</l>
+<l>scale_image_max (DistanceImageInv, DistanceImageInvScaled)</l>
+<l>watersheds_threshold (DistanceImageInv, Basins, 5)</l>
+<l>dev_display (DistanceImageInvScaled)</l>
+<l>dev_display (Basins)</l>
+<l>disp_continue_message (WindowHandle, 'black', 'true')</l>
+<l>stop ()</l>
+<c>* </c>
+<l>dev_display (GrayImage)</l>
+<l>dev_display (SelectedRegions)</l>
+<l>dev_set_color ('blue')</l>
+<l>dev_display (Basins)</l>
+<l>disp_continue_message (WindowHandle, 'black', 'true')</l>
+<l>stop ()</l>
+<c>* </c>
+<l>intersection (Basins, SelectedRegions, SegmentedPellets)</l>
+<l>dev_display (GrayImage)</l>
+<l>dev_set_colored (12)</l>
+<l>dev_display (SegmentedPellets)</l>
+<l>disp_continue_message (WindowHandle, 'black', 'true')</l>
+<l>stop ()</l>
+<l>return ()</l>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>

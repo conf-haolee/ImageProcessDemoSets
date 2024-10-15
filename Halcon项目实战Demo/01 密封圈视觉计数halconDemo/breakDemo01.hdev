@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="18.11.0.1">
+<procedure name="main">
+<interface/>
+<body>
+<l>read_image (Breakdemo01, 'D:/01 Work/feelerTek_20230415_20230415/06 缺陷物料检测_20231225_/breakDemo01.bmp')</l>
+<c></c>
+<l>rgb1_to_gray(Breakdemo01, GrayImage)</l>
+<c></c>
+<l>threshold(GrayImage, Region, 0, 120)</l>
+<c></c>
+<l>connection(Region, ConnectedRegions)</l>
+<c></c>
+<l>count_obj(ConnectedRegions, Number)</l>
+<c></c>
+<l>for i:= 1 to Number by 1</l>
+<l>    select_obj(ConnectedRegions, ObjectSelected, i)</l>
+<c>    * 先对断裂处膨胀 再腐蚀</c>
+<l>    closing_circle(ObjectSelected,RegionClosing, 50)</l>
+<l>    difference(RegionClosing, ObjectSelected, RegionDifference)</l>
+<c>    </c>
+<l>    connection(RegionDifference, ConnectedRegions1)</l>
+<l>    area_center(ConnectedRegions1, Area, Row, Column)</l>
+<l>    for Index := 1 to |Area| by 1</l>
+<l>        if  (Area[Index-1] &gt; 100)</l>
+<l>            select_obj (ConnectedRegions1, ObjectSelected1, Index)</l>
+<l>            dev_set_color('green')</l>
+<l>            dev_display(ObjectSelected1)</l>
+<l>            stop()</l>
+<l>        endif</l>
+<c>        </c>
+<l>    endfor</l>
+<l>    stop()</l>
+<l>endfor</l>
+<l>dev_set_color('black')</l>
+<l>dev_display(Region)</l>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>

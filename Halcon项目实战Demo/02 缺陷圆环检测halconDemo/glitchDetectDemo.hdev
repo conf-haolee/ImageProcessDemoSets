@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="18.11.0.1">
+<procedure name="main">
+<interface/>
+<body>
+<l>dev_close_window ()</l>
+<l>* read_image (Image, 'C:/Users/22967/Desktop/圆环缺陷检测/处理1.jpg')</l>
+<l>read_image (Image, 'D:/01 Work/feelerTek_20230415_20230415/06 缺陷物料检测_20231225_/DefectImage3.bmp')</l>
+<c></c>
+<l>dev_open_window_fit_image (Image, 0, 0, -1, -1, WindowHandle)</l>
+<l>dev_display (Image)</l>
+<c>*********************方法二**************************</c>
+<c>* 灰度分割阈值偏移</c>
+<l>ThresholdOffest:=80</l>
+<c>*外圆缺陷查找阈值</c>
+<l>OutCircleTh:=100.5</l>
+<c>*内圆缺陷查找阈值</c>
+<l>InCircleTh:=50.5</l>
+<c>*缺陷区域面积阈值</c>
+<l>NGArea:=50</l>
+<c>*噪点过滤阈值</c>
+<l>DelNoise:=1.5</l>
+<c></c>
+<c>*读入图片</c>
+<c></c>
+<l>rgb1_to_gray (Image, GrayImage)</l>
+<c>*二值化选取垫片区域</c>
+<l>binary_threshold (GrayImage, Region, 'max_separability', 'dark', UsedThreshold)</l>
+<l>threshold (GrayImage, Region1, 0, UsedThreshold+ThresholdOffest)</l>
+<l>connection (Region1, ConnectedRegions)</l>
+<l>count_obj(ConnectedRegions, Number)</l>
+<c></c>
+<l>gen_empty_obj (EmptyObject1)</l>
+<l>for i := 1 to Number by 1</l>
+<l>    select_obj(ConnectedRegions, ObjectSelected1, i)</l>
+<c>    *外圆缺陷查找</c>
+<l>    fill_up (ObjectSelected1, RegionFillUp1)</l>
+<l>    opening_circle (RegionFillUp1, RegionOpening, OutCircleTh)</l>
+<l>    difference (RegionFillUp1, RegionOpening, RegionDifference5)</l>
+<c>    *内圆缺陷查找</c>
+<l>    difference (RegionFillUp1, ObjectSelected1, RegionDifference6)</l>
+<l>    connection (RegionDifference6, ConnectedRegions3)</l>
+<l>    select_shape_std (ConnectedRegions3, SelectedRegions2, 'max_area', 70)</l>
+<l>    opening_circle (SelectedRegions2, RegionOpening3, InCircleTh)</l>
+<l>    difference (SelectedRegions2, RegionOpening3, RegionDifference7)</l>
+<c>    *合并缺陷区域</c>
+<l>    union2 (RegionDifference5, RegionDifference7, RegionUnion1)</l>
+<l>    opening_circle (RegionUnion1, RegionOpening4, DelNoise)</l>
+<l>    connection (RegionOpening4, ConnectedRegions4)</l>
+<c>    *结果判断</c>
+<l>    area_center (ConnectedRegions4, Area1, Row4, Column4)</l>
+<c>    </c>
+<l>    for Index1 := 1 to |Area1| by 1</l>
+<l>        if  (Area1[Index1-1] &gt; NGArea)</l>
+<l>            select_obj (ConnectedRegions4, ObjectSelected, Index1)</l>
+<l>            smallest_circle (ObjectSelected, Row3, Column3, Radius2)</l>
+<l>            dev_disp_text('hello11', 'window', Row3, Column3, 'black', [], [])</l>
+<l>            gen_circle (Circle4, Row3, Column3, Radius2)</l>
+<l>*             stop()</l>
+<l>            concat_obj (EmptyObject1, Circle4, EmptyObject1)</l>
+<l>        endif</l>
+<l>    endfor  </l>
+<l>*     stop()</l>
+<l>endfor</l>
+<c></c>
+<c>*显示结果</c>
+<l>dev_set_draw ('margin')</l>
+<l>dev_set_line_width (3)</l>
+<l>dev_display (Image)</l>
+<l>dev_set_color('red')</l>
+<l>dev_display (EmptyObject1)</l>
+<l>stop()</l>
+<c></c>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>

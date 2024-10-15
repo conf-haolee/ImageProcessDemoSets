@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="20.11.1.0">
+<procedure name="main">
+<interface/>
+<body>
+<c></c>
+<c>* 定义图片的宽度和高度</c>
+<l>Width := 512</l>
+<l>Height := 512</l>
+<c>* 生成一个纯白背景的图片</c>
+<l>gen_image_const(WhiteImage, 'byte', Width, Height)</l>
+<c>* 设置图片的所有像素为 255 (纯白)</c>
+<l>gen_rectangle1(Rectangle, 0, 0, Height, Width)</l>
+<l>get_region_points(Rectangle, Rows, Columns)</l>
+<l>get_grayval(WhiteImage, Rows, Columns, Grayval)</l>
+<c></c>
+<c>* 把默认的黑色图像填充成白色</c>
+<l>tuple_length(Grayval, Length)</l>
+<l>Grayval[0:Length-1] := 255</l>
+<c></c>
+<l>set_grayval(WhiteImage, Rows, Columns, Grayval)</l>
+<c></c>
+<c>* 保存纯白图片</c>
+<l>write_image(WhiteImage, 'bmp', 0, 'C:/Users/haoLee/OneDrive/Desktop/white22.bmp')</l>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>

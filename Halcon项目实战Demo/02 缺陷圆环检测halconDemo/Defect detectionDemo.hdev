@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="18.11.0.1">
+<procedure name="main">
+<interface/>
+<body>
+<c></c>
+<l>* read_image (Defect01, 'D:/Desktop/Defect01.jpg')</l>
+<c></c>
+<l>read_image (Defectimage3, 'D:/01 Work/feelerTek_20230415_20230415/06 缺陷物料检测_20231225_/DefectImage3.bmp')</l>
+<l>get_image_size(Defectimage3, Width, Height)</l>
+<l>dev_close_window()</l>
+<l>dev_open_window(0, 0, Width/3, Height/3, 'black', WindowHandle)</l>
+<l>dev_display (Defectimage3)</l>
+<l>rgb1_to_gray(Defectimage3, GrayImage)</l>
+<l>threshold (GrayImage, Region, 0, 120)</l>
+<l>connection(Region, ConnectedRegions)</l>
+<c>* select_shape_std (ConnectedRegions, SelectedRegions, 'max_area', 70)/</c>
+<c> </c>
+<c>* 物料较细的不适合一开始就 做开运算</c>
+<l>* opening_circle(ConnectedRegions, RegionOpening, 10)</l>
+<l>fill_up(ConnectedRegions, RegionFillUp1)</l>
+<l>count_obj(ConnectedRegions, Number)</l>
+<c></c>
+<c>* 判断参数</c>
+<l>PI := 3.1415926</l>
+<c>* 设置圆环半径显示范围</c>
+<l>radiusRange :=[100,140]</l>
+<c>* 设置圆环空洞限制范围</c>
+<l>holeAreaRange := 200</l>
+<c>* 设置圆环断裂区域限制</c>
+<l>fractureArea := 20</l>
+<c>* 设置圆环最小圆度值</c>
+<l>Mincircularity := 0.9</l>
+<l>defectType := []</l>
+<c></c>
+<l>gen_empty_obj(EmptyObject)</l>
+<c></c>
+<l>for i := 1 to Number by 1</l>
+<l>    select_obj(ConnectedRegions, ObjectSelected, i)</l>
+<l>    area_center(ObjectSelected,Area, Row1, Column1)</l>
+<l>    smallest_rectangle1(ObjectSelected, Row13, Column13, Row22, Column22)</l>
+<l>    region_features (ObjectSelected, 'width', Value)</l>
+<l>    region_features(ObjectSelected, 'height', Value1)</l>
+<l>*     tuple_sub(Row13, Row22, high)</l>
+<l>*     tuple_sub(Column13, Column22, with)</l>
+<c>    </c>
+<l>    if(Area &lt; 20)</l>
+<l>        continue</l>
+<l>    endif</l>
+<c>    * 算出当前物料的</c>
+<l>    smallest_rectangle1(ObjectSelected,Row11, Column11, Row21, Column21)</l>
+<l>    fill_up(ObjectSelected,RegionFillUp)</l>
+<c>    * 3 扭曲物料  填充圆环的圆度小于设置目标值</c>
+<l>    circularity(RegionFillUp,Circularity)</l>
+<l>    if(Circularity &lt; Mincircularity)</l>
+<l>        gen_rectangle1(Rectangle, Row11, Column11, Row21, Column21)</l>
+<l>        concat_obj (EmptyObject, Rectangle, EmptyObject)</l>
+<l>        tuple_concat(defectType,3,defectType)</l>
+<l>        continue</l>
+<l>    endif</l>
+<c>    </c>
+<c>    * 1 判断尺寸差异</c>
+<l>    area_center(RegionFillUp, Area1, Row, Column)</l>
+<l>    tuple_sqrt(Area1/PI, wR)</l>
+<c>         * 对半径判断</c>
+<l>    if(wR &lt; radiusRange[0] or wR &gt; radiusRange[1])</l>
+<l>        gen_rectangle1(Rectangle, Row11, Column11, Row21, Column21)</l>
+<l>        concat_obj (EmptyObject, Rectangle, EmptyObject)</l>
+<l>        tuple_concat(defectType,1, defectType)</l>
+<l>        continue</l>
+<l>    endif</l>
+<c>    </c>
+<c>    * 2 利用空洞面积判断实心物料</c>
+<l>    area_holes(ObjectSelected, holeArea)</l>
+<l>    if(holeArea &lt; holeAreaRange)</l>
+<l>        gen_rectangle1(Rectangle, Row11, Column11, Row21, Column21)</l>
+<l>        concat_obj (EmptyObject, Rectangle, EmptyObject)</l>
+<l>        tuple_concat(defectType,2,defectType)</l>
+<l>        continue</l>
+<l>    endif</l>
+<c>    </c>
+<c>    * 4 断裂物料  待改进</c>
+<l>    closing_circle(RegionFillUp,RegionClosing, 100.5)</l>
+<l>    difference (RegionClosing, RegionFillUp, RegionDifference)</l>
+<l>    opening_circle (RegionDifference, DetectRegionOpening, 1.5)</l>
+<l>    area_center(DetectRegionOpening, curFractureArea, Row3, Column3)</l>
+<l>    if(curFractureArea &gt; fractureArea) </l>
+<l>        gen_rectangle1(Rectangle, Row11, Column11, Row21, Column21)</l>
+<l>        concat_obj (EmptyObject, Rectangle, EmptyObject)</l>
+<l>        tuple_concat(defectType,4,defectType)</l>
+<l>    endif</l>
+<c>    </c>
+<c>    * 5 大毛刺识别</c>
+<c>    </c>
+<l>endfor</l>
+<c></c>
+<l>dev_set_draw ('margin')</l>
+<l>dev_set_line_width (2)</l>
+<l>dev_display (GrayImage)</l>
+<l>dev_set_color('red')</l>
+<l>dev_display (EmptyObject)</l>
+<l>tuple_length(defectType, Length)</l>
+<l>stop()</l>
+<l>for i := 1 to Length by 1</l>
+<l>    select_obj(EmptyObject, ObjectSelected1, i)</l>
+<l>    smallest_rectangle1(ObjectSelected1,Row12, Column12, Row2, Column2)</l>
+<l>    dev_disp_text('类型：' + defectType[i - 1], 'window', Row2/3, Column2/3, 'black', [], [])</l>
+<l>endfor</l>
+<l>stop()</l>
+<c></c>
+<c></c>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>

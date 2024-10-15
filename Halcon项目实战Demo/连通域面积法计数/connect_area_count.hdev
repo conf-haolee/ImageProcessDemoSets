@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="20.11.1.0">
+<procedure name="main">
+<interface/>
+<body>
+<c></c>
+<l>read_image (Image555, 'C:/Users/haoLee/OneDrive/Desktop/555.bmp')</l>
+<c></c>
+<l>get_image_size (Image555, Width, Height)</l>
+<l>dev_open_window (50, 50, Width /4 , Height/4, 'black', WindowHandle)</l>
+<l>dev_set_window(WindowHandle)</l>
+<l>set_display_font (WindowHandle, 10, 'mono', 'true', 'false')</l>
+<c></c>
+<c>* 预处理图像</c>
+<l>rgb1_to_gray (Image555, GrayImage)</l>
+<l>dev_display(GrayImage)</l>
+<c></c>
+<l>threshold(GrayImage, Region, 0, 130)</l>
+<l>connection(Region, ConnectedRegions)</l>
+<l>gen_contour_region_xld (ConnectedRegions, Contours, 'border')</l>
+<l>count_obj(Contours,Number)</l>
+<c>    </c>
+<c>* 参数设置</c>
+<l>single_cirele := 5000</l>
+<l>count := 0</l>
+<l>times := 0.6</l>
+<c></c>
+<l>for Index := 1 to Number by 1</l>
+<l>    current_count := 0</l>
+<l>    select_obj(ConnectedRegions, ObjectSelected, Index)</l>
+<l>    area_center(ObjectSelected,Area, Row, Column)</l>
+<c>    </c>
+<l>    smallest_rectangle1(ObjectSelected, Row1, Column1, Row2, Column2)</l>
+<l>    gen_rectangle1(Rectangle, Row1, Column1, Row2, Column2)</l>
+<c>    </c>
+<l>    if(Area &lt; 8500)</l>
+<l>        current_count := 1</l>
+<l>    elseif(Area &lt; 13000)</l>
+<l>        current_count := 2</l>
+<l>    elseif(Area &lt; 18000)</l>
+<l>        current_count := 3</l>
+<l>    elseif(Area &lt; 24000)</l>
+<l>        current_count := 4</l>
+<l>    else </l>
+<l>        current_count := 5</l>
+<l>    endif</l>
+<l>    disp_message(WindowHandle, current_count, 'image', Row2, Column2, 'green', 'false')</l>
+<l>    count := count + current_count</l>
+<l>    endfor</l>
+<l>stop()</l>
+<l>dev_disp_text('count: ' + count, 'window', 10, 10, 'black', [], [])</l>
+<c>     </c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>

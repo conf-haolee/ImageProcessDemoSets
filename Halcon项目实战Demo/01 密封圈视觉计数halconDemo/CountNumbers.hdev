@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="19.11.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<c>* 计数程序的halcon Demo</c>
+<c></c>
+<c></c>
+<l>dev_update_off ()</l>
+<l>read_image (Image, 'pellets')</l>
+<l>dev_close_window ()</l>
+<l>get_image_size (Image, Width, Height)</l>
+<l>dev_open_window (0, 0, Width, Height, 'black', WindowID)</l>
+<l>dev_set_part (0, 0, Height - 1, Width - 1)</l>
+<l>set_display_font (WindowID, 16, 'mono', 'true', 'false')</l>
+<l>dev_set_colored (6)</l>
+<l>dev_set_draw ('margin')</l>
+<l>dev_set_line_width (3)</l>
+<l>dev_display (Image)</l>
+<l>disp_message (WindowID, 'Detect each single pellet', 'window', 12, 12, 'black', 'true')</l>
+<l>disp_continue_message (WindowID, 'black', 'true')</l>
+<l>stop ()</l>
+<c>* </c>
+<c>* Segment the regions of the pellets from the background</c>
+<l>binary_threshold (Image, LightRegion, 'max_separability', 'light', UsedThreshold)</l>
+<l>opening_circle (LightRegion, Region, 3.5)</l>
+<l>dev_display (Region)</l>
+<l>disp_message (WindowID, 'First, segment the pellets', 'window', 12, 12, 'black', 'true')</l>
+<l>disp_continue_message (WindowID, 'black', 'true')</l>
+<l>stop ()</l>
+<c></c>
+<c>* Separate each pellet from the others by erosion</c>
+<l>erosion_circle (Region, RegionErosion, 7.5)</l>
+<l>dev_display (Image)</l>
+<l>dev_display (RegionErosion)</l>
+<l>disp_message (WindowID, 'Erosion of the pellet regions', 'window', 12, 12, 'black', 'true')</l>
+<l>disp_continue_message (WindowID, 'black', 'true')</l>
+<l>stop ()</l>
+<c>* </c>
+<c>* Now, compute the connected pellet regions</c>
+<l>connection (RegionErosion, ConnectedRegions)</l>
+<c></c>
+<c></c>
+<c>* </c>
+<c>* Turn back to the original pellet size by applying a dilation</c>
+<l>totalNumber:=  1</l>
+<l>dilation_circle (ConnectedRegions, RegionDilation, 7.5)</l>
+<c>* 选择出大的面积然后计数</c>
+<l>select_shape (RegionDilation, SelectedRegions, 'area', 'and', 600, 2000)</l>
+<l>count_obj (SelectedRegions, Number1)</l>
+<c>* 选择出校的面积 然后计数</c>
+<l>select_shape (RegionDilation, SelectedRegions1, 'area', 'and', 2000, 5000)</l>
+<l>count_obj (SelectedRegions1,Number2)</l>
+<l>totalNumber := Number1 + Number2 * 2</l>
+<c></c>
+<l>dev_display (Image)</l>
+<l>dev_display (RegionDilation)</l>
+<l>dev_disp_text ('hello', 'window', 'top', 'left', 'black', [], [])</l>
+<l>disp_text (WindowID, 'hello', 'window', 12, 12, 'black', [], [])</l>
+<l>disp_message (WindowID, totalNumber + ' pellets detected', 'window', 12, 12, 'black', 'true')</l>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>
